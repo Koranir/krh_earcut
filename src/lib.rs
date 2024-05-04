@@ -51,44 +51,73 @@ impl Earcut {
     #[must_use]
     /// Perform the earcut algorithm.
     pub fn earcut(mut self) -> Vec<Triangle> {
-        let mut tris = Vec::with_capacity(self.nodes.len() - 2);
+        let is_ear = |node_idx, nodes: &[Node]| {
+            let current_node: Node = nodes[node_idx];
+            // If the node's start and end are the same, we are part of a line, and all triangles have been extracted.
 
+            let previous_node = nodes[current_node.prev];
+            let next_node = nodes[current_node.next];
+
+            // Make a triangle from our previous node, current node, and next node's positions.
+            let current_triangle = Triangle(previous_node.pos, current_node.pos, next_node.pos);
+
+            // If the triangle is reflex, ignore it.
+            if current_triangle.is_reflex() {
+                return false;
+            }
+
+            let mut checking_node_idx = next_node.next;
+            loop {
+                let checking_node = nodes[checking_node_idx];
+                let checking_node_next = nodes[checking_node.next];
+                let checking_node_prev = nodes[checking_node.prev];
+
+                if current_triangle.contains(checking_node.pos)
+                    && Triangle(
+                        checking_node_prev.pos,
+                        checking_node.pos,
+                        checking_node_next.pos,
+                    )
+                    .is_reflex()
+                {
+                    return false;
+                }
+
+                checking_node_idx = checking_node.next;
+                if checking_node_idx == current_node.prev {
+                    break;
+                }
+            }
+
+            true
+        };
+
+        let mut tris = Vec::with_capacity(self.nodes.len() - 2);
         let mut current_node_idx = 0;
+        let mut looped_no_recovery_idx = current_node_idx;
 
         loop {
             let current_node = self.nodes[current_node_idx];
+            let prev_node = self.nodes[current_node.prev];
+            let next_node = self.nodes[current_node.next];
+
             if current_node.next == current_node.prev {
                 break;
             }
 
-            let previous_node = self.nodes[current_node.prev];
-            let next_node = self.nodes[current_node.next];
-
-            let current_triangle = Triangle(previous_node.pos, current_node.pos, next_node.pos);
-
-            if !current_triangle.is_reflex() {
-                let mut poly_is_ear = true;
-                let mut checking_node_idx = next_node.next;
-                while checking_node_idx != current_node.prev {
-                    let checking_node = self.nodes[checking_node_idx];
-
-                    if current_triangle.contains(checking_node.pos) {
-                        poly_is_ear = false;
-                        break;
-                    }
-
-                    checking_node_idx = checking_node.next;
-                }
-
-                if poly_is_ear {
-                    self.nodes[current_node.prev].next = current_node.next;
-                    self.nodes[current_node.next].prev = current_node.prev;
-
-                    tris.push(current_triangle);
-                }
+            if is_ear(current_node_idx, &self.nodes) {
+                tris.push(Triangle(prev_node.pos, current_node.pos, next_node.pos));
+                self.nodes[current_node.prev].next = current_node.next;
+                self.nodes[current_node.next].prev = current_node.prev;
+                looped_no_recovery_idx = current_node.next;
+                current_node_idx = current_node.next;
+                continue;
             }
 
             current_node_idx = current_node.next;
+            if current_node_idx == looped_no_recovery_idx {
+                break;
+            }
         }
 
         tris
@@ -129,7 +158,7 @@ impl Triangle {
         let a = ba.y * cb.x;
         let b = cb.y * ba.x;
 
-        (a - b) > 0.0
+        (a - b) >= 0.0
     }
 }
 
