@@ -23,10 +23,11 @@ pub struct Earcut {
     pub nodes: Vec<Node>,
 }
 impl Earcut {
+    #[must_use]
     pub fn new(polygon: &[Point]) -> Self {
         let len = polygon.len();
         let nodes = polygon
-            .into_iter()
+            .iter()
             .enumerate()
             .map(|(idx, pos)| Node {
                 pos: *pos,
@@ -38,6 +39,7 @@ impl Earcut {
         Self { nodes }
     }
 
+    #[must_use]
     pub fn earcut(mut self) -> Vec<Triangle> {
         let mut tris = Vec::with_capacity(self.nodes.len() - 2);
 
@@ -86,8 +88,9 @@ impl Earcut {
 #[derive(Debug, Clone, Copy)]
 pub struct Triangle(pub Point, pub Point, pub Point);
 impl Triangle {
+    #[must_use]
     pub fn contains(self, point: Point) -> bool {
-        #[inline(always)]
+        #[inline]
         fn cross_product(a: Point, b: Point) -> f32 {
             a.x * b.y - b.x * a.y
         }
@@ -105,6 +108,7 @@ impl Triangle {
         ca && ab && bc
     }
 
+    #[must_use]
     pub fn is_reflex(self) -> bool {
         let ba = self.1 - self.0;
         let cb = self.2 - self.1;
