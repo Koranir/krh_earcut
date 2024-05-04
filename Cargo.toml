@@ -2,6 +2,15 @@
 name = "krh_earcut"
 version = "0.1.0"
 edition = "2021"
+description = "A simple earcut polygon triangulation algorithm implementation"
+readme = "README.md"
+keywords = ["no_std"]
+categories = ["algorithms"]
+
+[features]
+default = ["std"]
+std = ["glam/std"]
+libm = ["glam/libm"]
 
 [dependencies]
 glam = { version = "0.27.0", default-features = false }

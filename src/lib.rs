@@ -3,6 +3,7 @@
     clippy::all,
     clippy::pedantic,
     clippy::nursery,
+    clippy::cargo,
     missing_debug_implementations
 )]
 
@@ -12,18 +13,26 @@ use alloc::vec::Vec;
 pub type Point = glam::Vec2;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+/// A linked-list node, with usize references to a backing array.
 pub struct Node {
+    /// Position of the node's vertex.
     pub pos: Point,
+    /// A reference to the previous vertex at the end of a connected edge.
     pub prev: usize,
+    /// A reference to the next vertex at the end of a connected edge.
     pub next: usize,
 }
 
+/// The backing storage for the linked list.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Earcut {
     pub nodes: Vec<Node>,
 }
 impl Earcut {
     #[must_use]
+    /// Create a new earcut instance.
+    ///
+    /// Ensure that the point are valid (in order, deduplicated, etc).
     pub fn new(polygon: &[Point]) -> Self {
         let len = polygon.len();
         let nodes = polygon
@@ -40,6 +49,7 @@ impl Earcut {
     }
 
     #[must_use]
+    /// Perform the earcut algorithm.
     pub fn earcut(mut self) -> Vec<Triangle> {
         let mut tris = Vec::with_capacity(self.nodes.len() - 2);
 
@@ -86,9 +96,11 @@ impl Earcut {
 }
 
 #[derive(Debug, Clone, Copy)]
+/// A triangle, made up of 3 points.
 pub struct Triangle(pub Point, pub Point, pub Point);
 impl Triangle {
     #[must_use]
+    /// Check if a given point lies within a triangle.
     pub fn contains(self, point: Point) -> bool {
         #[inline]
         fn cross_product(a: Point, b: Point) -> f32 {
@@ -109,6 +121,7 @@ impl Triangle {
     }
 
     #[must_use]
+    /// Check if the triangle is reflex.
     pub fn is_reflex(self) -> bool {
         let ba = self.1 - self.0;
         let cb = self.2 - self.1;
