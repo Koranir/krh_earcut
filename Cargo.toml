@@ -1,0 +1,13 @@
+[package]
+name = "krh_earcut"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+glam = "0.27.0"
+
+[dev-dependencies]
+macroquad = "0.4.5"
+
+[[example]]
+name = "outline"
