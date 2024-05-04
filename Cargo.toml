@@ -6,6 +6,8 @@ description = "A simple earcut polygon triangulation algorithm implementation"
 readme = "README.md"
 keywords = ["no_std"]
 categories = ["algorithms"]
+repository = "https://github.com/Koranir/krh_earcut"
+license = "MIT OR Apache-2.0"
 
 [features]
 default = ["std"]
